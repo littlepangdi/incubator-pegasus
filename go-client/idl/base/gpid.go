@@ -20,6 +20,7 @@
 package base
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -29,8 +30,8 @@ type Gpid struct {
 	Appid, PartitionIndex int32
 }
 
-func (id *Gpid) Read(iprot thrift.TProtocol) error {
-	v, err := iprot.ReadI64()
+func (id *Gpid) Read(ctx context.Context, iprot thrift.TProtocol) error {
+	v, err := iprot.ReadI64(ctx)
 	if err != nil {
 		return err
 	}
@@ -40,9 +41,9 @@ func (id *Gpid) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (id *Gpid) Write(oprot thrift.TProtocol) error {
+func (id *Gpid) Write(ctx context.Context, oprot thrift.TProtocol) error {
 	v := int64(id.Appid) + int64(id.PartitionIndex)<<32
-	return oprot.WriteI64(v)
+	return oprot.WriteI64(ctx, v)
 }
 
 func (id *Gpid) String() string {
@@ -50,4 +51,12 @@ func (id *Gpid) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("%+v", *id)
+}
+
+// TODO test this
+func (id *Gpid) Equals(pid *Gpid) bool {
+	if id.Appid == pid.Appid && id.PartitionIndex == pid.PartitionIndex {
+		return true
+	}
+	return false
 }

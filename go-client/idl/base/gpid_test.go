@@ -20,6 +20,7 @@
 package base
 
 import (
+	"context"
 	"testing"
 
 	"github.com/apache/incubator-pegasus/go-client/pegalog"
@@ -57,15 +58,15 @@ func TestGpid(t *testing.T) {
 		// test gpid serialize
 		buf := thrift.NewTMemoryBuffer()
 		oprot := thrift.NewTBinaryProtocolTransport(buf)
-		testCase.gpidObject.Write(oprot)
-		oprot.WriteMessageEnd()
+		testCase.gpidObject.Write(context.Background(), oprot)
+		oprot.WriteMessageEnd(context.Background())
 		assert.Equal(t, buf.Bytes(), testCase.gpidBytes)
 
 		// test gpid deserialize
 		iprot := thrift.NewTBinaryProtocolTransport(buf)
 		readGpid := &Gpid{}
-		readGpid.Read(iprot)
-		iprot.ReadMessageEnd()
+		readGpid.Read(context.Background(), iprot)
+		iprot.ReadMessageEnd(context.Background())
 		assert.Equal(t, readGpid, testCase.gpidObject)
 	}
 }

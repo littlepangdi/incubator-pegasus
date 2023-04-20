@@ -20,6 +20,7 @@
 package base
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -29,8 +30,8 @@ type Blob struct {
 	Data []byte
 }
 
-func (b *Blob) Read(iprot thrift.TProtocol) error {
-	data, err := iprot.ReadBinary()
+func (b *Blob) Read(ctx context.Context, iprot thrift.TProtocol) error {
+	data, err := iprot.ReadBinary(ctx)
 	if err != nil {
 		return err
 	}
@@ -38,8 +39,8 @@ func (b *Blob) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (b *Blob) Write(oprot thrift.TProtocol) error {
-	return oprot.WriteBinary(b.Data)
+func (b *Blob) Write(ctx context.Context, oprot thrift.TProtocol) error {
+	return oprot.WriteBinary(ctx, b.Data)
 }
 
 func (b *Blob) String() string {
@@ -47,6 +48,13 @@ func (b *Blob) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("Blob(%+v)", *b)
+}
+
+func (b *Blob) Equals(key *Blob) bool {
+	if string(b.Data) == string(key.Data) {
+		return true
+	}
+	return false
 }
 
 func NewBlob() *Blob {

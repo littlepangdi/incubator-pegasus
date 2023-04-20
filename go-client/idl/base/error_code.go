@@ -20,6 +20,7 @@
 package base
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -120,13 +121,13 @@ func (e DsnErrCode) Error() string {
 	return fmt.Sprintf("[%s]", e.String())
 }
 
-func (ec *ErrorCode) Read(iprot thrift.TProtocol) (err error) {
-	ec.Errno, err = iprot.ReadString()
+func (ec *ErrorCode) Read(ctx context.Context, iprot thrift.TProtocol) (err error) {
+	ec.Errno, err = iprot.ReadString(ctx)
 	return
 }
 
-func (ec *ErrorCode) Write(oprot thrift.TProtocol) error {
-	return oprot.WriteString(ec.Errno)
+func (ec *ErrorCode) Write(ctx context.Context, oprot thrift.TProtocol) error {
+	return oprot.WriteString(ctx, ec.Errno)
 }
 
 func (ec *ErrorCode) String() string {
@@ -134,6 +135,13 @@ func (ec *ErrorCode) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("ErrorCode(%+v)", *ec)
+}
+
+func (ec *ErrorCode) Equals(err *ErrorCode) bool {
+	if ec.Errno == err.Errno {
+		return true
+	}
+	return false
 }
 
 //go:generate enumer -type=RocksDBErrCode -output=rocskdb_err_string.go

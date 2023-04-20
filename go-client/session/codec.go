@@ -21,6 +21,7 @@ package session
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"sync"
@@ -65,13 +66,13 @@ func (p *PegasusCodec) Marshal(v interface{}) ([]byte, error) {
 	oprot := thrift.NewTBinaryProtocolTransport(buf)
 
 	var err error
-	if err = oprot.WriteMessageBegin(r.Name, thrift.CALL, r.SeqId); err != nil {
+	if err = oprot.WriteMessageBegin(context.Background(), r.Name, thrift.CALL, r.SeqId); err != nil {
 		return nil, err
 	}
-	if err = r.Args.Write(oprot); err != nil {
+	if err = r.Args.Write(context.Background(), oprot); err != nil {
 		return nil, err
 	}
-	if err = oprot.WriteMessageEnd(); err != nil {
+	if err = oprot.WriteMessageEnd(context.Background()); err != nil {
 		return nil, err
 	}
 
@@ -87,11 +88,11 @@ func (p *PegasusCodec) Unmarshal(data []byte, v interface{}) error {
 
 	iprot := thrift.NewTBinaryProtocolTransport(thrift.NewStreamTransportR(bytes.NewBuffer(data)))
 	ec := &base.ErrorCode{}
-	if err := ec.Read(iprot); err != nil {
+	if err := ec.Read(context.Background(), iprot); err != nil {
 		return err
 	}
 
-	name, _, seqId, err := iprot.ReadMessageBegin()
+	name, _, seqId, err := iprot.ReadMessageBegin(context.Background())
 	if err != nil {
 		return err
 	}
@@ -118,10 +119,10 @@ func (p *PegasusCodec) Unmarshal(data []byte, v interface{}) error {
 	r.Result = nameToResultFunc()
 
 	// read response body
-	if err = r.Result.Read(iprot); err != nil {
+	if err = r.Result.Read(context.Background(), iprot); err != nil {
 		return err
 	}
-	if err = iprot.ReadMessageEnd(); err != nil {
+	if err = iprot.ReadMessageEnd(context.Background()); err != nil {
 		return err
 	}
 
@@ -412,13 +413,13 @@ func (p *MockCodec) MockUnMarshal(unmarshal UnmarshalFunc) {
 // a trait of the thrift-generated argument type (MetaQueryCfgArgs, RrdbPutArgs e.g.)
 type RpcRequestArgs interface {
 	String() string
-	Write(oprot thrift.TProtocol) error
+	Write(ctx context.Context, oprot thrift.TProtocol) error
 }
 
 // a trait of the thrift-generated result type (MetaQueryCfgResult e.g.)
 type RpcResponseResult interface {
 	String() string
-	Read(iprot thrift.TProtocol) error
+	Read(ctx context.Context, iprot thrift.TProtocol) error
 }
 
 type PegasusRpcCall struct {

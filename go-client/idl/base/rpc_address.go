@@ -20,6 +20,7 @@
 package base
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -37,8 +38,8 @@ func NewRPCAddress(ip net.IP, port int) *RPCAddress {
 	}
 }
 
-func (r *RPCAddress) Read(iprot thrift.TProtocol) error {
-	address, err := iprot.ReadI64()
+func (r *RPCAddress) Read(ctx context.Context, iprot thrift.TProtocol) error {
+	address, err := iprot.ReadI64(ctx)
 	if err != nil {
 		return err
 	}
@@ -46,8 +47,8 @@ func (r *RPCAddress) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (r *RPCAddress) Write(oprot thrift.TProtocol) error {
-	return oprot.WriteI64(r.address)
+func (r *RPCAddress) Write(ctx context.Context, oprot thrift.TProtocol) error {
+	return oprot.WriteI64(ctx, r.address)
 }
 
 func (r *RPCAddress) String() string {
@@ -71,4 +72,12 @@ func (r *RPCAddress) GetAddress() string {
 
 func (r *RPCAddress) GetRawAddress() int64 {
 	return r.address
+}
+
+// TODO test this
+func (r *RPCAddress) Equals(primary *RPCAddress) bool {
+	if r.String() == primary.String() {
+		return true
+	}
+	return false
 }
